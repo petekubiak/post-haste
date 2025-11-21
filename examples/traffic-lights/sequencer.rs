@@ -7,7 +7,7 @@ use crate::{Addresses, Payloads, consts, postmaster};
 pub(crate) enum SequencerMessage {
     Begin,
     ButtonPress,
-    #[allow(private_interfaces)],
+    #[allow(private_interfaces)]
     InternalMessage(InternalMessage),
 }
 
@@ -34,6 +34,7 @@ pub(crate) struct SequencerAgent {
     pedestrian_light_state: PedestrianCrossingSequenceState,
 }
 
+#[derive(Debug)]
 struct InternalMessage {
     traffic_light_state: TrafficSequenceState,
     pedestrian_light_state: Option<PedestrianCrossingSequenceState>,
@@ -57,7 +58,7 @@ impl Agent for SequencerAgent {
         loop {
             let received_message = inbox.recv().await.unwrap();
             match received_message.payload {
-                Payloads::SequencerMessage(message) => self.handle_message(message).await,
+                Payloads::Sequencer(message) => self.handle_message(message).await,
                 _ => println!(
                     "SequencerAgent received unsupported message {:?}",
                     received_message.payload
@@ -82,9 +83,9 @@ impl SequencerAgent {
         // Handle traffic light changes
         self.traffic_light_state = internal_message.traffic_light_state;
         postmaster::send(
-            crate::Addresses::LightsMessage,
+            crate::Addresses::LightsAgent,
             self.address,
-            Payloads::Lights(LightsMessage::SetTrafficLightsState(
+            Payloads::Lights(LightsMessage::SetTrafficLightState(
                 self.traffic_light_state.clone(),
             )),
         )
@@ -143,7 +144,7 @@ impl SequencerAgent {
         }
     }
 
-    async handle_button_press_in_red_state(&mut self) {
+    async fn handle_button_press_in_red_state(&mut self) {
         match self.pedestrian_light_state {
             PedestrianCrossingSequenceState::Stop => panic!(), // Invalid in red state
             PedestrianCrossingSequenceState::CrossPending
@@ -163,7 +164,7 @@ impl SequencerAgent {
 
     async fn begin(&mut self) {
         match self.pedestrian_light_state {
-            PedestrianCrossingSequenceState::CrossPending => postmaster::sent(
+            PedestrianCrossingSequenceState::CrossPending => postmaster::send(
                 Addresses::LightsAgent,
                 self.address,
                 Payloads::Lights(LightsMessage::SetButtonLightState(true))
@@ -181,7 +182,7 @@ impl SequencerAgent {
         postmaster::send(
             Addresses::LightsAgent,
             self.address,
-            Payloads::Lights(LightsMessage::SetTrafficLightsState(
+            Payloads::Lights(LightsMessage::SetTrafficLightState(
                 self.traffic_light_state.clone(),
             )),
         )
@@ -198,40 +199,40 @@ impl SequencerAgent {
         .unwrap();
 
         self.schedule_next_state().await
+    }
 
-        async schedule_next_state(&mut self) {
-            match self.traffic_light_state {
-                TrafficSequenceState::Red => self.calculate_red_state_next_step().await,
-                TrafficSequenceState::RedToGreen => postmaster::message(
-                    self.address,
-                    self.address,
-                    Payloads::Sequencer(SequencerMessage::InternalMessage(InternalMessage {
-                        traffic_light_state: TrafficSequenceState::Green,
-                        pedestrian_light_state: None,
-                    })),
-                )
-                .with_delay(consts::AMBER_TO_GREEN_DELAY)
-                .send()
-                .await
-                .unwrap(),
-                TrafficSequenceState::Green => self.calculate_green_state_next_step().await,
-                TrafficSequenceState::GreenToRed => postmaster::message(
-                    self.address,
-                    self.address,
-                    Payloads::Sequencer(SequencerMessage::InternalMessage(InternalMessage {
-                        traffic_light_state: TrafficSequenceState::Red,
-                        pedestrian_light_state: Some(PedestrianCrossingSequenceState::CrossPending),
-                    })),
-                )
-                .with_delay(consts::AMBER_TO_RED_DELAY)
-                .send()
-                .await
-                .unwrap()
-            }
+    async fn schedule_next_state(&mut self) {
+        match self.traffic_light_state {
+            TrafficSequenceState::Red => self.calculate_red_state_next_step().await,
+            TrafficSequenceState::RedToGreen => postmaster::message(
+                self.address,
+                self.address,
+                Payloads::Sequencer(SequencerMessage::InternalMessage(InternalMessage {
+                    traffic_light_state: TrafficSequenceState::Green,
+                    pedestrian_light_state: None,
+                })),
+            )
+            .with_delay(consts::AMBER_TO_GREEN_DELAY)
+            .send()
+            .await
+            .unwrap(),
+            TrafficSequenceState::Green => self.calculate_green_state_next_step().await,
+            TrafficSequenceState::GreenToRed => postmaster::message(
+                self.address,
+                self.address,
+                Payloads::Sequencer(SequencerMessage::InternalMessage(InternalMessage {
+                    traffic_light_state: TrafficSequenceState::Red,
+                    pedestrian_light_state: Some(PedestrianCrossingSequenceState::CrossPending),
+                })),
+            )
+            .with_delay(consts::AMBER_TO_RED_DELAY)
+            .send()
+            .await
+            .unwrap()
         }
     }
 
-    async calculate_red_state_next_step(&self) {
+    async fn calculate_red_state_next_step(&self) {
         match self.pedestrian_light_state {
             PedestrianCrossingSequenceState::Stop => panic!(),
             PedestrianCrossingSequenceState::CrossPending => postmaster::message(
@@ -245,7 +246,8 @@ impl SequencerAgent {
             .with_delay(consts::CROSSING_START_DELAY)
             .send()
             .await
-            .unwrap()
+            .unwrap(),
+
             PedestrianCrossingSequenceState::Cross => {
                 postmaster::message(
                     self.address,

@@ -4,7 +4,7 @@ use crate::{Addresses, Payloads, postmaster, sequencer};
 
 #[derive(Debug)]
 pub(crate) enum LightsMessage {
-    SetTrafficLightState(sequence::TrafficSequenceState),
+    SetTrafficLightState(sequencer::TrafficSequenceState),
     SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
     SetButtonLightState(bool),
     Display,
@@ -38,17 +38,17 @@ impl From<sequencer::TrafficSequenceState> for TrafficLights {
                 red: true,
                 amber: true,
                 green: false,
-            }
+            },
             sequencer::TrafficSequenceState::Green => TrafficLights {
                 red: false,
                 amber: false,
                 green: true,
-            }
+            },
             sequencer::TrafficSequenceState::GreenToRed => TrafficLights {
                 red: false,
                 amber: true,
                 green: false,
-            }
+            },
         }
     }
 }
@@ -107,7 +107,7 @@ impl Agent for LightsAgent {
             },
             pedestrian_light_state: PedestrianLights {
                 ..Default::default()
-            }
+            },
             cross_pending: false,
         }
     }
@@ -132,7 +132,7 @@ impl LightsAgent {
                 },
                 LightsMessage::SetPedestrianLightState(pedestrian_crossing_sequencer_state) => {
                     self.pedestrian_light_state =
-                        TrafficLights::from(pedestrian_crossing_sequencer_state)
+                        PedestrianLights::from(pedestrian_crossing_sequencer_state)
                 },
                 LightsMessage::SetButtonLightState(cross_pending) => {
                     self.cross_pending = cross_pending
