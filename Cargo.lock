@@ -422,7 +422,7 @@ checksum = "f84267b20a16ea918e43c6a88433c2d54fa145c92a811b5b047ccbe153674483"
 
 [[package]]
 name = "post-haste"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "const_env",
  "embassy-executor",
