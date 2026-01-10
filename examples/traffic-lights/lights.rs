@@ -138,8 +138,7 @@ impl Agent for LightsAgent {
 
     async fn run(mut self, mut inbox: Inbox<Self::Message>) -> ! {
         loop {
-            let optional_message = inbox.recv().await;
-            if let Some(message) = optional_message {
+            if let Some(message) = inbox.recv().await {
                 self.message_handler(message.payload);
             }
         }
