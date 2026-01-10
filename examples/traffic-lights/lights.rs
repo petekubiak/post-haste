@@ -128,7 +128,7 @@ impl Agent for LightsAgent {
     type Message = postmaster::Message;
     type Config = ();
 
-    async fn create(address: Self::Address, _config: Self::Config) -> Self {
+    async fn create(_address: Self::Address, _config: Self::Config) -> Self {
         Self {
             traffic_light_state: TrafficLights::default(),
             pedestrian_light_state: PedestrianLights::default(),
