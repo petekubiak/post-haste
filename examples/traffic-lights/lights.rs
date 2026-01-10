@@ -1,3 +1,13 @@
+use crossterm::{
+    cursor, execute, queue,
+    style::{self, Stylize},
+    terminal,
+};
+use std::{
+    io::{self, Stdout},
+    option,
+};
+
 use post_haste::agent::{Agent, Inbox};
 
 use crate::{Addresses, Payloads, postmaster, sequencer};
@@ -9,7 +19,7 @@ pub(crate) enum LightsMessage {
     SetTrafficLightState(sequencer::TrafficSequenceState),
     SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
     SetButtonLightState(bool),
-    Display,
+    Display { message: Option<String> },
 }
 
 // The TrafficLights and PedestrianLights structs are encapsulated in a module
@@ -121,6 +131,8 @@ pub(crate) struct LightsAgent {
     traffic_light_state: hardware::TrafficLights,
     pedestrian_light_state: hardware::PedestrianLights,
     cross_pending: bool,
+    standard_out: Stdout,
+    current_message: String,
 }
 
 impl Agent for LightsAgent {
@@ -133,6 +145,8 @@ impl Agent for LightsAgent {
             traffic_light_state: TrafficLights::default(),
             pedestrian_light_state: PedestrianLights::default(),
             cross_pending: false,
+            standard_out: io::stdout(),
+            current_message: String::new(),
         }
     }
 
@@ -159,75 +173,71 @@ impl LightsAgent {
                 LightsMessage::SetButtonLightState(cross_pending) => {
                     self.cross_pending = cross_pending
                 }
-                LightsMessage::Display => self.display_ascii(),
+                LightsMessage::Display { message } => {
+                    if let Some(new_message) = message {
+                        self.current_message = new_message;
+                    }
+                }
             }
             self.display_ascii();
         }
     }
 
-    fn display_ascii(&self) {
+    fn display_ascii(&mut self) {
         // ----
-        // |⚫|   ----
-        // ----   |🖐️|
-        // |⚫|   |🏃‍♂️‍➡️|
-        // ----   ----
-        // |🟢|
-        // ----   |🔴|
+        // |██|   -------
+        // ----   |STOP |
+        // |██|   |CROSS|
+        // ----   -------
+        // |██|
+        // ----   |██|
 
-        let mut text = String::new();
-
-        text.push_str("----\n");
-
-        if self.traffic_light_state.red() {
-            text.push_str("|🔴|");
+        let red_char = if self.traffic_light_state.red() {
+            "██".red()
         } else {
-            text.push_str("|⚫|");
-        }
-
-        text.push_str("   ----\n");
-
-        text.push_str("----   ");
-
-        if self.pedestrian_light_state.stop() {
-            text.push_str("|🖐️|\n");
+            "██".black()
+        };
+        let amber_char = if self.traffic_light_state.amber() {
+            "██".yellow()
         } else {
-            text.push_str("|  |\n");
-        }
-
-        if self.traffic_light_state.amber() {
-            text.push_str("|🟡|");
+            "██".black()
+        };
+        let green_char = if self.traffic_light_state.green() {
+            "██".green()
         } else {
-            text.push_str("|⚫|");
-        }
+            "██".black()
+        };
 
-        text.push_str("   ");
-
-        if self.pedestrian_light_state.cross() {
-            text.push_str("|🏃‍♂️‍➡️|\n");
+        let stop_chars = if self.pedestrian_light_state.stop() {
+            "STOP ".red()
         } else {
-            text.push_str("|  |\n");
-        }
-
-        text.push_str("----   ----\n");
-
-        if self.traffic_light_state.green() {
-            text.push_str("|🟢|\n");
+            "     ".red()
+        };
+        let cross_chars = if self.pedestrian_light_state.cross() {
+            "CROSS".green()
         } else {
-            text.push_str("|⚫|\n");
-        }
+            "     ".green()
+        };
 
-        text.push_str("----   ");
-
-        if self.cross_pending {
-            text.push_str("|🔴|");
+        let button_light_chars = if self.cross_pending {
+            "██".red()
         } else {
-            text.push_str("|⚫|");
+            "  ".red()
+        };
+
+        // Clear the terminal (technically this just prints a load of empty lines)
+        if let Err(e) = execute!(self.standard_out, terminal::Clear(terminal::ClearType::All)) {
+            println!("Error printing to terminal: {:?}", e);
         }
 
-        for _ in 0..30 {
-            println!();
-        }
-
-        println!("{}", text);
+        println!("{:?}", self.current_message);
+        println!("");
+        println!("----");
+        println!("|{red_char}|   -------");
+        println!("----   |{stop_chars}|");
+        println!("|{amber_char}|   |{cross_chars}|");
+        println!("----   -------");
+        println!("|{green_char}|");
+        println!("----   |{button_light_chars}|");
     }
 }

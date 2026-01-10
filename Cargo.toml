@@ -21,3 +21,7 @@ portable-atomic = { version = "1.11.0", features = [
 tokio = { version = "1.45.1", features = ["full"] }
 once_cell = { version = "1.21.3" }
 portable-atomic = { version = "1.11.0" }
+
+[[examples]]
+name = "traffic-lights"
+dependencies = { crossterm = "0.29.0" }

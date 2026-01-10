@@ -8,6 +8,7 @@ For this example traffic lights consists of the following components:
 - Traffic lights for signalling to cars. They have 3 lights: red, amber and green. There are four valid states for the traffic lights (see appendix).
 - Pedestrian lights for signalling to people who want to walk across the road. There are two lights - one that says to cross and a light that says to stop. Exactly one light should be lit at all times.
 - A crossing button, which pedestrians can press to cycle the lights to a crossing state. In this example, the traffic lights will stay green until the crossing button has been pressed.
+- A light on the crossing button, which is lit after the button has been pressed until the pedestrians are told to cross.
 
 ## Implementation In Post-Haste
 

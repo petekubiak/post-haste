@@ -17,7 +17,9 @@ pub async fn button_task() -> ! {
             postmaster::send(
                 Addresses::LightsAgent,
                 Addresses::ButtonTask,
-                Payloads::Lights(LightsMessage::Display),
+                Payloads::Lights(LightsMessage::Display {
+                    message: Some(String::from("Message sent from ButtonTask to LightsAgent")),
+                }),
             )
             .await
             .unwrap();
