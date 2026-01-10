@@ -4,7 +4,7 @@ use post_haste::init_postmaster;
 use std::process::exit;
 
 use crate::{
-    button::ButtonAgent,
+    button::button_task,
     lights::{LightsAgent, LightsMessage},
     sequencer::{SequencerAgent, SequencerMessage},
 };
@@ -23,8 +23,8 @@ pub(crate) enum Payloads {
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Addresses {
     LightsAgent,
-    ButtonAgent,
     SequencerAgent,
+    ButtonTask,
 }
 
 init_postmaster!(Addresses, Payloads);
@@ -37,7 +37,7 @@ async fn main() {
 
     postmaster::register_agent!(LightsAgent, LightsAgent, ()).unwrap();
     postmaster::register_agent!(SequencerAgent, SequencerAgent, ()).unwrap();
-    postmaster::register_agent!(ButtonAgent, ButtonAgent, ()).unwrap();
+    tokio::spawn(button_task());
 
     postmaster::send(
         Addresses::SequencerAgent,
