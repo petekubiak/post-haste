@@ -1,9 +1,5 @@
-fix the cargo.toml
-add vector for messages
-revert display to take no args
-add DispMessage option to lights
-add lots of DispMessage calls which explain what's happening to the code
 Change the code to use a singular enum instead of having both TrafficLightState and PedestrianLightState
+add lots of DispMessage calls which explain what's happening to the code
   - Green
   - GreenToRed
   - RedCrossPending
@@ -13,3 +9,5 @@ Change the code to use a singular enum instead of having both TrafficLightState 
 Add a load of comments
 Ensure all the variables are suitable
 Make the ReadMe nicer
+Add tonnes of comments
+

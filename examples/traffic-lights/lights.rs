@@ -1,12 +1,5 @@
-use crossterm::{
-    cursor, execute, queue,
-    style::{self, Stylize},
-    terminal,
-};
-use std::{
-    io::{self, Stdout},
-    option,
-};
+use crossterm::{execute, style::Stylize, terminal};
+use std::io::{self, Stdout};
 
 use post_haste::agent::{Agent, Inbox};
 
@@ -19,7 +12,8 @@ pub(crate) enum LightsMessage {
     SetTrafficLightState(sequencer::TrafficSequenceState),
     SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
     SetButtonLightState(bool),
-    Display { message: Option<String> },
+    Display,
+    AddMessage(String),
 }
 
 // The TrafficLights and PedestrianLights structs are encapsulated in a module
@@ -132,7 +126,7 @@ pub(crate) struct LightsAgent {
     pedestrian_light_state: hardware::PedestrianLights,
     cross_pending: bool,
     standard_out: Stdout,
-    current_message: String,
+    messages: Vec<String>,
 }
 
 impl Agent for LightsAgent {
@@ -146,7 +140,7 @@ impl Agent for LightsAgent {
             pedestrian_light_state: PedestrianLights::default(),
             cross_pending: false,
             standard_out: io::stdout(),
-            current_message: String::new(),
+            messages: vec![String::new()],
         }
     }
 
@@ -173,10 +167,14 @@ impl LightsAgent {
                 LightsMessage::SetButtonLightState(cross_pending) => {
                     self.cross_pending = cross_pending
                 }
-                LightsMessage::Display { message } => {
-                    if let Some(new_message) = message {
-                        self.current_message = new_message;
+                LightsMessage::Display => {
+                    // Display will update after match statement
+                }
+                LightsMessage::AddMessage(message) => {
+                    while self.messages.len() >= crate::consts::MAX_MESSAGES {
+                        self.messages.remove(0);
                     }
+                    self.messages.push(message);
                 }
             }
             self.display_ascii();
@@ -230,7 +228,10 @@ impl LightsAgent {
             println!("Error printing to terminal: {:?}", e);
         }
 
-        println!("{:?}", self.current_message);
+        self.messages
+            .iter()
+            .for_each(|message| println!("{}", message));
+
         println!("");
         println!("----");
         println!("|{red_char}|   -------");
