@@ -7,4 +7,5 @@ pub const CROSSING_START_DELAY: Duration = Duration::from_secs(4);
 pub const CROSSING_LENGTH: Duration = Duration::from_secs(5);
 pub const CROSSING_END_DELAY: Duration = Duration::from_secs(4);
 
+// TODO rename this variable so it doesn't get confused with postmaster messages
 pub const MAX_MESSAGES: usize = 3;

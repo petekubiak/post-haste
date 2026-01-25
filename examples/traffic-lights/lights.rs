@@ -5,15 +5,17 @@ use post_haste::agent::{Agent, Inbox};
 
 use crate::{Addresses, Payloads, postmaster, sequencer};
 
-use hardware::{PedestrianLights, TrafficLights};
+use hardware::{ButtonLight, PedestrianLights, TrafficLights};
 
 #[derive(Debug)]
 pub(crate) enum LightsMessage {
-    SetTrafficLightState(sequencer::TrafficSequenceState),
-    SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
-    SetButtonLightState(bool),
-    Display,
-    AddMessage(String),
+    // SetTrafficLightState(sequencer::TrafficSequenceState),
+    // SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
+    SetSequenceState {
+        sequence_state: sequencer::SequencerState,
+    },
+    // Display,
+    DebugMessage(String),
 }
 
 // The TrafficLights and PedestrianLights structs are encapsulated in a module
@@ -23,45 +25,54 @@ pub(crate) enum LightsMessage {
 mod hardware {
     use crate::sequencer;
 
+    #[derive(Copy, Clone, Eq, PartialEq)]
+    pub enum LightState {
+        Off,
+        On,
+    }
+
     // The state of each light in the traffic lights
     // For an embedded software system, these would be the states of each GPIO
     pub(super) struct TrafficLights {
-        red: bool,
-        amber: bool,
-        green: bool,
+        red: LightState,
+        amber: LightState,
+        green: LightState,
     }
 
     // The traffic lights default into the red state
     impl Default for TrafficLights {
         fn default() -> Self {
-            sequencer::TrafficSequenceState::Red.into()
+            sequencer::SequencerState::RedCrossEnding.into()
         }
     }
 
-    // TrafficLights can only be created from the 4 valid states, encapsulated in
-    // the TrafficSequenceState enum
-    impl From<sequencer::TrafficSequenceState> for TrafficLights {
-        fn from(value: sequencer::TrafficSequenceState) -> Self {
+    impl From<sequencer::SequencerState> for TrafficLights {
+        fn from(value: sequencer::SequencerState) -> Self {
             match value {
-                sequencer::TrafficSequenceState::Red => TrafficLights {
-                    red: true,
-                    amber: false,
-                    green: false,
+                sequencer::SequencerState::Green | sequencer::SequencerState::GreenCrossPending => {
+                    Self {
+                        red: LightState::Off,
+                        amber: LightState::Off,
+                        green: LightState::On,
+                    }
+                }
+                sequencer::SequencerState::GreenToRed => Self {
+                    red: LightState::Off,
+                    amber: LightState::On,
+                    green: LightState::Off,
                 },
-                sequencer::TrafficSequenceState::RedToGreen => TrafficLights {
-                    red: true,
-                    amber: true,
-                    green: false,
+                sequencer::SequencerState::RedCrossPending
+                | sequencer::SequencerState::RedCrossing
+                | sequencer::SequencerState::RedCrossEnding => Self {
+                    red: LightState::On,
+                    amber: LightState::Off,
+                    green: LightState::Off,
                 },
-                sequencer::TrafficSequenceState::Green => TrafficLights {
-                    red: false,
-                    amber: false,
-                    green: true,
-                },
-                sequencer::TrafficSequenceState::GreenToRed => TrafficLights {
-                    red: false,
-                    amber: true,
-                    green: false,
+                sequencer::SequencerState::RedToGreen
+                | sequencer::SequencerState::RedToGreenCrossPending => Self {
+                    red: LightState::On,
+                    amber: LightState::On,
+                    green: LightState::Off,
                 },
             }
         }
@@ -69,42 +80,47 @@ mod hardware {
 
     // 'getter' functions for private struct members
     impl TrafficLights {
-        pub(super) fn red(&self) -> bool {
+        pub(super) fn red(&self) -> LightState {
             self.red
         }
-        pub(super) fn amber(&self) -> bool {
+        pub(super) fn amber(&self) -> LightState {
             self.amber
         }
-        pub(super) fn green(&self) -> bool {
+        pub(super) fn green(&self) -> LightState {
             self.green
         }
     }
 
     // The state of each light in the pedestrian lights
     pub(super) struct PedestrianLights {
-        stop: bool,
-        cross: bool,
+        stop: LightState,
+        cross: LightState,
     }
 
     // The pedestrian lights should default into the stop state
     impl Default for PedestrianLights {
         fn default() -> Self {
-            sequencer::PedestrianCrossingSequenceState::Stop.into()
+            // sequencer::PedestrianCrossingSequenceState::Stop.into()
+            sequencer::SequencerState::RedCrossEnding.into()
         }
     }
 
-    impl From<sequencer::PedestrianCrossingSequenceState> for PedestrianLights {
-        fn from(value: sequencer::PedestrianCrossingSequenceState) -> Self {
+    impl From<sequencer::SequencerState> for PedestrianLights {
+        fn from(value: sequencer::SequencerState) -> Self {
             match value {
-                sequencer::PedestrianCrossingSequenceState::Cross => PedestrianLights {
-                    stop: false,
-                    cross: true,
+                sequencer::SequencerState::Green
+                | sequencer::SequencerState::GreenCrossPending
+                | sequencer::SequencerState::GreenToRed
+                | sequencer::SequencerState::RedCrossPending
+                | sequencer::SequencerState::RedCrossEnding
+                | sequencer::SequencerState::RedToGreen
+                | sequencer::SequencerState::RedToGreenCrossPending => Self {
+                    stop: LightState::On,
+                    cross: LightState::Off,
                 },
-                sequencer::PedestrianCrossingSequenceState::Stop
-                | sequencer::PedestrianCrossingSequenceState::CrossEnding
-                | sequencer::PedestrianCrossingSequenceState::CrossPending => PedestrianLights {
-                    stop: true,
-                    cross: false,
+                sequencer::SequencerState::RedCrossing => Self {
+                    stop: LightState::Off,
+                    cross: LightState::On,
                 },
             }
         }
@@ -112,11 +128,41 @@ mod hardware {
 
     // 'getter' functions for the the private struct members
     impl PedestrianLights {
-        pub(super) fn stop(&self) -> bool {
+        pub(super) fn stop(&self) -> LightState {
             self.stop
         }
-        pub(super) fn cross(&self) -> bool {
+        pub(super) fn cross(&self) -> LightState {
             self.cross
+        }
+    }
+
+    #[derive(PartialEq, Eq)]
+    pub struct ButtonLight {
+        pub(super) button_light: LightState,
+    }
+
+    impl Default for ButtonLight {
+        fn default() -> Self {
+            sequencer::SequencerState::RedCrossEnding.into()
+        }
+    }
+
+    impl From<sequencer::SequencerState> for ButtonLight {
+        fn from(value: sequencer::SequencerState) -> Self {
+            match value {
+                sequencer::SequencerState::RedToGreenCrossPending
+                | sequencer::SequencerState::GreenCrossPending
+                | sequencer::SequencerState::GreenToRed
+                | sequencer::SequencerState::RedCrossPending => Self {
+                    button_light: LightState::On,
+                },
+                sequencer::SequencerState::Green
+                | sequencer::SequencerState::RedCrossing
+                | sequencer::SequencerState::RedCrossEnding
+                | sequencer::SequencerState::RedToGreen => Self {
+                    button_light: LightState::Off,
+                },
+            }
         }
     }
 }
@@ -124,9 +170,9 @@ mod hardware {
 pub(crate) struct LightsAgent {
     traffic_light_state: hardware::TrafficLights,
     pedestrian_light_state: hardware::PedestrianLights,
-    cross_pending: bool,
+    button_state: hardware::ButtonLight,
     standard_out: Stdout,
-    messages: Vec<String>,
+    debug_messages: Vec<String>,
 }
 
 impl Agent for LightsAgent {
@@ -138,50 +184,45 @@ impl Agent for LightsAgent {
         Self {
             traffic_light_state: TrafficLights::default(),
             pedestrian_light_state: PedestrianLights::default(),
-            cross_pending: false,
+            button_state: ButtonLight::default(),
             standard_out: io::stdout(),
-            messages: vec![String::new()],
+            debug_messages: vec![String::new()],
         }
     }
 
     async fn run(mut self, mut inbox: Inbox<Self::Message>) -> ! {
         loop {
             if let Some(message) = inbox.recv().await {
-                self.message_handler(message.payload);
+                match message.payload {
+                    Payloads::Lights(lights_message) => self.message_handler(lights_message),
+                    _ => (),
+                }
+                // self.message_handler(message.payload);
             }
         }
     }
 }
 
 impl LightsAgent {
-    fn message_handler(&mut self, message: Payloads) {
-        if let Payloads::Lights(lights_message) = message {
-            match lights_message {
-                LightsMessage::SetTrafficLightState(traffic_light_sequencer_state) => {
-                    self.traffic_light_state = TrafficLights::from(traffic_light_sequencer_state)
-                }
-                LightsMessage::SetPedestrianLightState(pedestrian_crossing_sequencer_state) => {
-                    self.pedestrian_light_state =
-                        PedestrianLights::from(pedestrian_crossing_sequencer_state)
-                }
-                LightsMessage::SetButtonLightState(cross_pending) => {
-                    self.cross_pending = cross_pending
-                }
-                LightsMessage::Display => {
-                    // Display will update after match statement
-                }
-                LightsMessage::AddMessage(message) => {
-                    while self.messages.len() >= crate::consts::MAX_MESSAGES {
-                        self.messages.remove(0);
-                    }
-                    self.messages.push(message);
-                }
+    fn message_handler(&mut self, lights_message: LightsMessage) {
+        match lights_message {
+            LightsMessage::SetSequenceState { sequence_state } => {
+                self.traffic_light_state = sequence_state.clone().into();
+                self.pedestrian_light_state = sequence_state.clone().into();
+                self.button_state = sequence_state.clone().into();
             }
-            self.display_ascii();
+            LightsMessage::DebugMessage(debug_message) => {
+                while self.debug_messages.len() >= crate::consts::MAX_MESSAGES {
+                    self.debug_messages.remove(0);
+                }
+                self.debug_messages.push(debug_message);
+            }
         }
+        self.display_ascii();
     }
 
     fn display_ascii(&mut self) {
+        use hardware::LightState;
         // ----
         // |██|   -------
         // ----   |STOP |
@@ -190,34 +231,34 @@ impl LightsAgent {
         // |██|
         // ----   |██|
 
-        let red_char = if self.traffic_light_state.red() {
+        let red_char = if self.traffic_light_state.red() == LightState::On {
             "██".red()
         } else {
             "██".black()
         };
-        let amber_char = if self.traffic_light_state.amber() {
+        let amber_char = if self.traffic_light_state.amber() == LightState::On {
             "██".yellow()
         } else {
             "██".black()
         };
-        let green_char = if self.traffic_light_state.green() {
+        let green_char = if self.traffic_light_state.green() == LightState::On {
             "██".green()
         } else {
             "██".black()
         };
 
-        let stop_chars = if self.pedestrian_light_state.stop() {
+        let stop_chars = if self.pedestrian_light_state.stop() == LightState::On {
             "STOP ".red()
         } else {
             "     ".red()
         };
-        let cross_chars = if self.pedestrian_light_state.cross() {
+        let cross_chars = if self.pedestrian_light_state.cross() == LightState::On {
             "CROSS".green()
         } else {
             "     ".green()
         };
 
-        let button_light_chars = if self.cross_pending {
+        let button_light_chars = if self.button_state.button_light == LightState::On {
             "██".red()
         } else {
             "  ".red()
@@ -228,7 +269,7 @@ impl LightsAgent {
             println!("Error printing to terminal: {:?}", e);
         }
 
-        self.messages
+        self.debug_messages
             .iter()
             .for_each(|message| println!("{}", message));
 
