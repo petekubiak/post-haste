@@ -2,30 +2,35 @@
 
 ## Overview
 
-This is an example of how traffic lights could be controller using the post-haste async framework.
+This is an example of how traffic lights could be controlled using the post-haste async framework.
 
-For this example traffic lights consists of the following components:
-- Traffic lights for signalling to cars. They have 3 lights: red, amber and green. There are four valid states for the traffic lights (see appendix).
-- Pedestrian lights for signalling to people who want to walk across the road. There are two lights - one that says to cross and a light that says to stop. Exactly one light should be lit at all times.
-- A crossing button, which pedestrians can press to cycle the lights to a crossing state. In this example, the traffic lights will stay green until the crossing button has been pressed.
-- A light on the crossing button, which is lit after the button has been pressed until the pedestrians are told to cross.
+For this example the traffic lights consists of the following components:
+- Traffic lights for signalling to cars. They have 3 lights: red, amber and green. There are four valid states for the traffic lights:
+```
+1) Red              2) Red to Green     3) Green            4) Green to Red
+----                ----                ----                ----
+|██|                |██|                |  |                |  |
+----                ----                ----                ----
+|  |                |██|                |  |                |██|
+----                ----                ----                ----
+|  |                |  |                |██|                |  |
+----                ----                ----                ----
+```
+- Pedestrian lights for signalling to people who want to walk across the road. There are two potential states:
+```
+1) Stop             2) Cross
+-------             -------
+|STOP |             |     |
+|     |             |CROSS|
+-------             -------
+```
+- A crossing button, which pedestrians can press to cycle the lights to a crossing state. In this example, the traffic lights will stay green until the crossing button has been pressed. The button has a light which indicates that the button has been pressed.
 
 ## Implementation In Post-Haste
 
-Most of the logic is handled by the `SequencerAgent` in `sequencer.rs`. The output 'hardware' (the 3 traffic lights and 2 pedestrian lights) are controlled by the `LightsAgent` in `lights.rs`. Finally, we need to handle the input 'hardware' - the crossing button. It would be perfectly valid to model this as another agent, but the input hardware only needs to send messages - it doesn't need to recieve them. As such, in this example we will simply model it as an async task instead.
+There are many possible implementations; for this example there are:
 
-### Sequencer Agent
-
-### Lights Agent
-
-### Button Task
-
-## Appendix
-
-### Valid States For Traffic Lights
-
-Many traffic lights in the UK will cycle through these four phases in order:
-- Green: Only the green light is lit; cars can pass through.
-- Green to Red: Only the amber light is lit; cars should stop if they can do so safely.
-- Red: Only the red light is lit; cars should not pass. After a short time of the traffic lights being red, the pedestrians may be signalled to cross.
-- Red to Green: The red and amber lights are lit; cars should prepare to start moving.
+- Two agents - Display and Sequencer. 
+- The Display agent is responsible for displaying text in the terminal (no other part of the program will print to the terminal). In a real embedded software project, you might have an agent for controlling GPIO pins.
+- The Sequencer agent is responsible for managing the states of the lights, and choosing what to do when the button is pressed. It sends delayed messages to itself to manage the timings of the lights - this adds a bit of complexity but means that all agents are always available to recieve messages.
+- The button functionality could also have been implemented as an agent, but as the button only sends messages and does not send any, it can simply be a tokio task which sends post-haste messages.

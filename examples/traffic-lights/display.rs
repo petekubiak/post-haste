@@ -1,27 +1,32 @@
+// The Display Agent is responsible for displaying text in the terminal
+
+// Help with clearning the terminal
 use crossterm::{execute, style::Stylize, terminal};
 use std::io::{self, Stdout};
-
-use post_haste::agent::{Agent, Inbox};
+// Library for getting the current time - this is for the debug messages
+use chrono::Local;
 
 use crate::{Addresses, Payloads, postmaster, sequencer};
-
 use hardware::{ButtonLight, PedestrianLights, TrafficLights};
+use post_haste::agent::{Agent, Inbox};
 
+// Declare valid messages which can be sent to this agent
 #[derive(Debug)]
-pub(crate) enum LightsMessage {
-    // SetTrafficLightState(sequencer::TrafficSequenceState),
-    // SetPedestrianLightState(sequencer::PedestrianCrossingSequenceState),
+pub(crate) enum DisplayMessage {
+    // Update the display with the current sequencer state
     SetSequenceState {
         sequence_state: sequencer::SequencerState,
     },
-    // Display,
+    // Add a message which will be displayed above the ascii traffic lights
     DebugMessage(String),
 }
 
 // The TrafficLights and PedestrianLights structs are encapsulated in a module
-// to prevent invalid states being created.
+// to prevent invalid states being created. For example, the red and green lights
+// cannot be active both at the same time!
 // The struct members are accessed through getter functions as the members are
-// kept private
+// kept private, to avoid anyone modifying this code in the future from accidentally
+// allowing invalid states
 mod hardware {
     use crate::sequencer;
 
@@ -46,6 +51,8 @@ mod hardware {
         }
     }
 
+    // Implement convertion from the sequencer state enum into the display struct
+    // of LightStates
     impl From<sequencer::SequencerState> for TrafficLights {
         fn from(value: sequencer::SequencerState) -> Self {
             match value {
@@ -105,6 +112,8 @@ mod hardware {
         }
     }
 
+    // Implement conversion from the sequencer state enum into the display struct
+    // of LightStates
     impl From<sequencer::SequencerState> for PedestrianLights {
         fn from(value: sequencer::SequencerState) -> Self {
             match value {
@@ -167,7 +176,8 @@ mod hardware {
     }
 }
 
-pub(crate) struct LightsAgent {
+// The Display Agent
+pub(crate) struct DisplayAgent {
     traffic_light_state: hardware::TrafficLights,
     pedestrian_light_state: hardware::PedestrianLights,
     button_state: hardware::ButtonLight,
@@ -175,7 +185,7 @@ pub(crate) struct LightsAgent {
     debug_messages: Vec<String>,
 }
 
-impl Agent for LightsAgent {
+impl Agent for DisplayAgent {
     type Address = Addresses;
     type Message = postmaster::Message;
     type Config = ();
@@ -193,34 +203,45 @@ impl Agent for LightsAgent {
     async fn run(mut self, mut inbox: Inbox<Self::Message>) -> ! {
         loop {
             if let Some(message) = inbox.recv().await {
+                // Await messages
                 match message.payload {
-                    Payloads::Lights(lights_message) => self.message_handler(lights_message),
-                    _ => (),
+                    Payloads::Display(lights_message) => self.message_handler(lights_message),
+                    _ => println!(
+                        "DisplayAgent received unsupported message {:?}",
+                        message.payload
+                    ),
                 }
-                // self.message_handler(message.payload);
             }
         }
     }
 }
 
-impl LightsAgent {
-    fn message_handler(&mut self, lights_message: LightsMessage) {
+impl DisplayAgent {
+    // Handle each type of message that can be sent to this agent
+    fn message_handler(&mut self, lights_message: DisplayMessage) {
         match lights_message {
-            LightsMessage::SetSequenceState { sequence_state } => {
+            DisplayMessage::SetSequenceState { sequence_state } => {
                 self.traffic_light_state = sequence_state.clone().into();
                 self.pedestrian_light_state = sequence_state.clone().into();
                 self.button_state = sequence_state.clone().into();
             }
-            LightsMessage::DebugMessage(debug_message) => {
-                while self.debug_messages.len() >= crate::consts::MAX_MESSAGES {
+            DisplayMessage::DebugMessage(debug_message) => {
+                while self.debug_messages.len() >= crate::consts::MAXIMUM_DEBUG_MESSAGES {
                     self.debug_messages.remove(0);
                 }
-                self.debug_messages.push(debug_message);
+                // Prepend the message with the current time
+                self.debug_messages.push(format!(
+                    "{} {}",
+                    Local::now().format("%H:%M:%S").to_string(),
+                    debug_message
+                ));
             }
         }
         self.display_ascii();
     }
 
+    // Function to display debug messages followed by the state of the traffic lights
+    // using ascii
     fn display_ascii(&mut self) {
         use hardware::LightState;
         // ----
