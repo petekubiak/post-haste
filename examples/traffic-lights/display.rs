@@ -231,7 +231,7 @@ impl DisplayAgent {
                 // Prepend the message with the current time
                 self.debug_messages.push(format!(
                     "{} {}",
-                    Local::now().format("%H:%M:%S").to_string(),
+                    Local::now().format("%H:%M:%S"),
                     debug_message
                 ));
             }
@@ -293,7 +293,7 @@ impl DisplayAgent {
             .iter()
             .for_each(|message| println!("{}", message));
 
-        println!("");
+        println!();
         println!("----");
         println!("|{red_char}|   -------");
         println!("----   |{stop_chars}|");

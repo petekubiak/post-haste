@@ -207,10 +207,10 @@ impl SequencerAgent {
         postmaster::send(
             Addresses::DisplayAgent,
             Addresses::SequencerAgent,
-            Payloads::Display(DisplayMessage::DebugMessage(String::from(format!(
-                "Sequencer updated it's state to {:?}",
+            Payloads::Display(DisplayMessage::DebugMessage(format!(
+                "Sequencer updated its state to {:?}",
                 self.state
-            )))),
+            ))),
         )
         .await
         .unwrap()

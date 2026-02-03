@@ -12,7 +12,7 @@ pub async fn button_task() -> ! {
     let mut reader = BufReader::new(io::stdin()).lines();
     loop {
         // Infinitely asynchronously await for a line of input text from the terminal
-        if let Some(_) = reader.next_line().await.unwrap() {
+        if reader.next_line().await.unwrap().is_some() {
             // Upon receiving a line of text, send a message to the Sequencer Agent
             postmaster::send(
                 Addresses::SequencerAgent,
