@@ -1,6 +1,6 @@
 [package]
 name = "post-haste"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2024"
 
 [dependencies]
@@ -8,12 +8,10 @@ const_env = "0.1.4"
 
 # Embassy Dependencies
 [target.'cfg(target_os = "none")'.dependencies]
-embassy-executor = { version = "0.7.0" }
-embassy-sync = { version = "0.6.2" }
-embassy-time = { version = "0.4.0" }
-portable-atomic = { version = "1.11.0", features = [
-  "unsafe-assume-single-core",
-] }
+embassy-executor = "0.9.1"
+embassy-sync = "0.7.2"
+embassy-time = "0.5.0"
+portable-atomic = { version = "1.11.0" }
 
 
 # Tokio Dependencies

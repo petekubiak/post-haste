@@ -2,14 +2,14 @@ use embassy_time::Timer;
 use post_haste::agent::{Agent, Inbox};
 use rtt_target::rprintln;
 
-use crate::{postmaster, Addresses, Payloads};
+use crate::{Address, Payloads, postmaster};
 
 pub(crate) struct PoliteAgent {
-    address: Addresses,
+    address: Address,
 }
 
 impl Agent for PoliteAgent {
-    type Address = Addresses;
+    type Address = Address;
     type Message = postmaster::Message;
     type Config = ();
 
@@ -28,9 +28,11 @@ impl Agent for PoliteAgent {
 }
 
 impl PoliteAgent {
-    async fn handle_hello(&self, source: Addresses) {
+    async fn handle_hello(&self, source: Address) {
         rprintln!("{:?} got hello from {:?}!", self.address, source);
         Timer::after_secs(1).await;
-        postmaster::send(source, self.address, Payloads::Hello).await.unwrap();
+        postmaster::send(source, self.address, Payloads::Hello)
+            .await
+            .unwrap();
     }
 }

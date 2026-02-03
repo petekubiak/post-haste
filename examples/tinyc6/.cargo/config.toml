@@ -1,5 +1,5 @@
-[target.riscv32imc-unknown-none-elf]
-runner = "probe-rs run --chip=esp32c3 --always-print-stacktrace --no-location --catch-hardfault"
+[target.riscv32imac-unknown-none-elf]
+runner = "probe-rs run --chip=esp32c6 --preverify --always-print-stacktrace --no-location --catch-hardfault"
 
 [env]
 
@@ -10,7 +10,7 @@ rustflags = [
   "-C", "force-frame-pointers",
 ]
 
-target = "riscv32imc-unknown-none-elf"
+target = "riscv32imac-unknown-none-elf"
 
 [unstable]
 build-std = ["alloc", "core"]
