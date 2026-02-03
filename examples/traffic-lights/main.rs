@@ -15,9 +15,9 @@ mod consts;
 mod display;
 mod sequencer;
 
-// Declare the payloads for project. These are the messages that each agent can
-// send. The contents of each message is usually an enum which is defined in
-// the file implementing that agent
+/// Declare the payloads for project. These are the messages that each agent can
+/// send. The contents of each message is usually an enum which is defined in
+/// the file implementing that agent
 #[derive(Debug)]
 pub(crate) enum Payloads {
     // Messages to be sent to the display agent
@@ -26,9 +26,9 @@ pub(crate) enum Payloads {
     Sequencer(SequencerMessage),
 }
 
-// Declare the addresses for post-haste. Messages can be sent from any address
-// but Main and ButtonTask do not have agent implementations, so cannot receive
-// messages
+/// Declare the addresses for post-haste. Messages can be sent from any address
+/// but Main and ButtonTask do not have agent implementations, so cannot receive
+/// messages
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Addresses {
     Main,
@@ -41,8 +41,8 @@ init_postmaster!(Addresses, Payloads);
 
 #[tokio::main]
 async fn main() {
-    // Register each agent with it's address and the struct implementing the agent
-    // The config is not used for this project
+    // Register each agent with its address and the struct implementing the agent
+    // These agents do not require config, so the unit type is passed
     postmaster::register_agent!(DisplayAgent, DisplayAgent, ()).unwrap();
     postmaster::register_agent!(SequencerAgent, SequencerAgent, ()).unwrap();
     // Spawn the button task using tokio

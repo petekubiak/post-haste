@@ -1,6 +1,6 @@
-// The Display Agent is responsible for displaying text in the terminal
+//! The Display Agent is responsible for displaying text in the terminal
 
-// Help with clearning the terminal
+// Help with clearing the terminal
 use crossterm::{execute, style::Stylize, terminal};
 use std::io::{self, Stdout};
 // Library for getting the current time - this is for the debug messages
@@ -10,23 +10,23 @@ use crate::{Addresses, Payloads, postmaster, sequencer};
 use hardware::{ButtonLight, PedestrianLights, TrafficLights};
 use post_haste::agent::{Agent, Inbox};
 
-// Declare valid messages which can be sent to this agent
+/// Declares valid messages which can be sent to this agent
 #[derive(Debug)]
 pub(crate) enum DisplayMessage {
-    // Update the display with the current sequencer state
+    /// Update the display with the current sequencer state
     SetSequenceState {
         sequence_state: sequencer::SequencerState,
     },
-    // Add a message which will be displayed above the ascii traffic lights
+    /// Add a message which will be displayed above the ascii traffic lights
     DebugMessage(String),
 }
 
-// The TrafficLights and PedestrianLights structs are encapsulated in a module
-// to prevent invalid states being created. For example, the red and green lights
-// cannot be active both at the same time!
-// The struct members are accessed through getter functions as the members are
-// kept private, to avoid anyone modifying this code in the future from accidentally
-// allowing invalid states
+/// The TrafficLights and PedestrianLights structs are encapsulated in a module
+/// to prevent invalid states being created. For example, the red and green lights
+/// cannot be active both at the same time!
+/// The struct members are accessed through getter functions as the members are
+/// kept private, to avoid anyone modifying this code in the future from accidentally
+/// allowing invalid states
 mod hardware {
     use crate::sequencer;
 
@@ -36,8 +36,8 @@ mod hardware {
         On,
     }
 
-    // The state of each light in the traffic lights
-    // For an embedded software system, these would be the states of each GPIO
+    /// The state of each light in the traffic lights
+    /// For an embedded software system, these would be the states of each GPIO
     pub(super) struct TrafficLights {
         red: LightState,
         amber: LightState,
@@ -98,16 +98,15 @@ mod hardware {
         }
     }
 
-    // The state of each light in the pedestrian lights
+    /// The state of each light in the pedestrian lights
     pub(super) struct PedestrianLights {
         stop: LightState,
         cross: LightState,
     }
 
-    // The pedestrian lights should default into the stop state
+    /// The pedestrian lights should default into the stop state
     impl Default for PedestrianLights {
         fn default() -> Self {
-            // sequencer::PedestrianCrossingSequenceState::Stop.into()
             sequencer::SequencerState::RedCrossEnding.into()
         }
     }
@@ -176,7 +175,7 @@ mod hardware {
     }
 }
 
-// The Display Agent
+/// The Display Agent
 pub(crate) struct DisplayAgent {
     traffic_light_state: hardware::TrafficLights,
     pedestrian_light_state: hardware::PedestrianLights,
@@ -217,7 +216,7 @@ impl Agent for DisplayAgent {
 }
 
 impl DisplayAgent {
-    // Handle each type of message that can be sent to this agent
+    /// Handle each type of message that can be sent to this agent
     fn message_handler(&mut self, lights_message: DisplayMessage) {
         match lights_message {
             DisplayMessage::SetSequenceState { sequence_state } => {
@@ -240,8 +239,8 @@ impl DisplayAgent {
         self.display_ascii();
     }
 
-    // Function to display debug messages followed by the state of the traffic lights
-    // using ascii
+    /// Function to display debug messages followed by the state of the traffic lights
+    /// using ascii
     fn display_ascii(&mut self) {
         use hardware::LightState;
         // ----

@@ -1,5 +1,5 @@
-// The "button" task, which asynchronously awaits for the user to press enter,
-// signalling that the pedestrian wants to cross
+//! The "button" task, which asynchronously awaits for the user to press enter,
+//! signalling that the pedestrian wants to cross
 
 use tokio::io::{self, AsyncBufReadExt, BufReader};
 
@@ -7,7 +7,7 @@ use crate::{
     Addresses, Payloads, display::DisplayMessage, postmaster, sequencer::SequencerMessage,
 };
 
-// Asynchronous task for checking the crossing "button"
+/// Asynchronous task for checking the crossing "button"
 pub async fn button_task() -> ! {
     let mut reader = BufReader::new(io::stdin()).lines();
     loop {

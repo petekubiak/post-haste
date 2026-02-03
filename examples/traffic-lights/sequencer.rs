@@ -1,54 +1,54 @@
-// The Sequencer Agent, which handles most of the logic for the traffic lights.
-// It sends internal messages to itself with a delay, which will trigger the
-// next state to be set
+//! The Sequencer Agent, which handles most of the logic for the traffic lights.
+//! It sends internal messages to itself with a delay, which will trigger the
+//! next state to be set
 
 use post_haste::agent::Agent;
 
 use crate::display::DisplayMessage;
 use crate::{Addresses, Payloads, consts, postmaster};
 
-// An enumeration listing the potential messages that can be sent to the Sequencer agent
+/// An enumeration listing the potential messages that can be sent to the Sequencer agent
 #[derive(Debug)]
 pub(crate) enum SequencerMessage {
-    // Signal for the sequencer to begin
+    /// Signal for the sequencer to begin
     Begin,
-    // Signal to the sequencer that a button press has occured
+    /// Signal to the sequencer that a button press has occured
     ButtonPress,
-    // A private message which the Sequencer Agent can send to itself. Other
-    // agents cannot send this message
+    /// A private message which the Sequencer Agent can send to itself. Other
+    /// agents cannot send this message
     #[allow(private_interfaces)]
     InternalMessage,
 }
 
-// Enumeration defining all the possible states for the system. The system will
-// not cycle through all states every cycle
+/// Enumeration defining all the possible states for the system. The system will
+/// not cycle through all states every cycle
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum SequencerState {
-    // The traffic light is green, the button has not been pressed. Nothing will
-    // happen until the button is pressed. This is the only state which does not
-    // have a delayed internal message pending.
+    /// The traffic light is green, the button has not been pressed. Nothing will
+    /// happen until the button is pressed. This is the only state which does not
+    /// have a delayed internal message pending.
     Green,
-    // The traffic light is green and the button has been pressed. A delayed internal
-    // message will have been sent which will trigger the next state
+    /// The traffic light is green and the button has been pressed. A delayed internal
+    /// message will have been sent which will trigger the next state
     GreenCrossPending,
-    // The amber light is lit. A delayed internal message is sent
+    /// The amber light is lit. A delayed internal message is sent
     GreenToRed,
-    // The traffic light is red but the pedestrians cannot cross. A delayed message
-    // is sent
+    /// The traffic light is red but the pedestrians cannot cross. A delayed message
+    /// is sent
     RedCrossPending,
-    // The traffic light is red and the pedestrians can cross. A delayed message is sent
+    /// The traffic light is red and the pedestrians can cross. A delayed message is sent
     RedCrossing,
-    // The traffic light is red but the pedestrians cannot cross as the crossing time has
-    // ended. A delayed message is sent
+    /// The traffic light is red but the pedestrians cannot cross as the crossing time has
+    /// ended. A delayed message is sent
     RedCrossEnding,
-    // The red and amber lights are lit. A delayed message is sent
+    /// The red and amber lights are lit. A delayed message is sent
     RedToGreen,
-    // The red and amber lights are lit, and the button has already been pressed. The
-    // next state will be GreenCrossPending. A delayed message is sent
+    /// The red and amber lights are lit, and the button has already been pressed. The
+    /// next state will be GreenCrossPending. A delayed message is sent
     RedToGreenCrossPending,
 }
 
-// The struct for the sequencer agent
+/// The struct for the sequencer agent
 pub(crate) struct SequencerAgent {
     address: crate::Addresses,
     state: SequencerState,
@@ -105,8 +105,8 @@ impl SequencerAgent {
         .unwrap();
     }
 
-    // The sole purpose of internal messages in this agent is to signal that the
-    // sequencer should move onto the next state in the sequence
+    /// The sole purpose of internal messages in this agent is to signal that the
+    /// sequencer should move onto the next state in the sequence
     async fn handle_internal_message(&mut self) {
         self.set_next_state().await;
         self.send_current_state_to_lights_agent().await;
@@ -150,7 +150,7 @@ impl SequencerAgent {
         }
     }
 
-    // Function to begin the sequencer
+    /// Function to begin the sequencer
     async fn begin(&mut self) {
         self.send_current_state_to_lights_agent().await;
         self.schedule_next_state().await;
@@ -167,8 +167,8 @@ impl SequencerAgent {
         .unwrap()
     }
 
-    // For each state, set the new state and in some instances send a delayed
-    // internal message
+    /// For each state, set the new state and in some instances send a delayed
+    /// internal message
     async fn set_next_state(&mut self) {
         match self.state {
             SequencerState::Green => unreachable!(),
@@ -216,8 +216,8 @@ impl SequencerAgent {
         .unwrap()
     }
 
-    // Helper function to send delayed internal messages (from Sequencer Agent
-    // to Sequencer Agent). The delay depends on the current state
+    /// Helper function to send delayed internal messages (from Sequencer Agent
+    /// to Sequencer Agent). The delay depends on the current state
     async fn schedule_next_state(&mut self) {
         postmaster::message(
             self.address,
