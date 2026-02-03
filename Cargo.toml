@@ -4,7 +4,6 @@ version = "0.5.1"
 edition = "2024"
 
 [dependencies]
-chrono = "0.4.43"
 const_env = "0.1.4"
 
 # Embassy Dependencies
@@ -25,3 +24,4 @@ portable-atomic = { version = "1.11.0" }
 
 [dev-dependencies]
 crossterm = "0.29.0"
+chrono = "0.4.43"
