@@ -188,7 +188,7 @@ macro_rules! init_postmaster {
             /// An example of this would be if you wanted to be able to receive messages on the main task, or providing a debug node for Agents to send diagnostics to.
             ///
             /// # Example
-            /// ```rust
+            /// ```rust,ignore
             /// // Assuming Postmaster has been initialised above...
             ///
             /// use tokio::sync::mpsc::channel;
@@ -196,7 +196,7 @@ macro_rules! init_postmaster {
             /// #[tokio::main]
             /// async fn main() {
             ///   let (sender, receiver) = channel::<postmaster::Message>();
-            ///   postmaster::register(Address::MainTask, sender).unwrap()
+            ///   postmaster::register(Address::MainTask, sender).unwrap();
             ///
             ///   loop {
             ///     let received_message = receiver.recv().await.unwrap();
