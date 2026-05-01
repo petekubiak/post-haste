@@ -1,24 +1,23 @@
 [package]
 name = "post-haste"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 
 [dependencies]
-const_env = "0.1.4"
+const_env = "0.1.5"
 
 # Embassy Dependencies
 [target.'cfg(target_os = "none")'.dependencies]
-embassy-executor = "0.9.1"
-embassy-sync = "0.7.2"
-embassy-time = "0.5.0"
-portable-atomic = { version = "1.11.0" }
-
+embassy-executor = "0.10.0"
+embassy-sync = "0.8.0"
+embassy-time = "0.5.1"
+portable-atomic = "1.13.1"
 
 # Tokio Dependencies
 [target.'cfg(not(target_os = "none"))'.dependencies]
-tokio = { version = "1.45.1", features = ["full"] }
-once_cell = { version = "1.21.3" }
-portable-atomic = { version = "1.11.0" }
+tokio = { version = "1.52.1", features = ["full"] }
+once_cell = { version = "1.21.4" }
+portable-atomic = { version = "1.13.1" }
 
 [dev-dependencies]
 crossterm = "0.29.0"
