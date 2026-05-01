@@ -142,7 +142,7 @@ macro_rules! init_postmaster {
                         async fn run_agent(agent: $agent) {
                             agent.run(MAILBOX.inner.receiver().into()).await
                         }
-                        $spawner.spawn(run_agent(agent).expect("Embassy failed to spawn task. Maybe too many instances of that task are already running?"));
+                        $spawner.spawn(run_agent(agent).unwrap());
                     })
                 }};
                 ($spawner:ident, $agent_address:ident, $agent:ty, $config:expr) => {
