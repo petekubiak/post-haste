@@ -454,7 +454,7 @@ macro_rules! init_postmaster {
                     if let Some(spawner) = *POSTMASTER.spawner.borrow(){
                             Ok(spawner.spawn(
                                 delayed_send(destination, message, delay, timeout)
-                                .map_err(|_e| PostmasterError::TooManyInstances)?)
+                                .map_err(|e| PostmasterError::from(e))?)
                             )
                         } else {
                             Err(PostmasterError::SpawnerNotSet)
