@@ -142,7 +142,7 @@ macro_rules! init_postmaster {
                         async fn run_agent(agent: $agent) {
                             agent.run(MAILBOX.inner.receiver().into()).await
                         }
-                        $spawner.must_spawn(run_agent(agent));
+                        $spawner.spawn(run_agent(agent).expect("Embassy failed to spawn task. Maybe too many instances of that task are already running?"));
                     })
                 }};
                 ($spawner:ident, $agent_address:ident, $agent:ty, $config:expr) => {
@@ -455,7 +455,7 @@ macro_rules! init_postmaster {
                     }
                     #[cfg(target_os = "none")]
                     if let Some(spawner) = *POSTMASTER.spawner.borrow(){
-                            Ok(spawner.spawn(delayed_send(destination, message, delay, timeout))?)
+                            Ok(spawner.spawn(delayed_send(destination, message, delay, timeout).map_err(|_e| PostmasterError::TooManyInstances)?)?)
                         } else {
                             Err(PostmasterError::SpawnerNotSet)
                         }

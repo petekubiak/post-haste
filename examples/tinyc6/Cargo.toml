@@ -33,7 +33,7 @@ panic-rtt-target = "0.2.0"
 rtt-target = "0.6.2"
 # for more networking protocol support see https://crates.io/crates/edge-net
 bt-hci = "0.6.0"
-embassy-executor = { version = "0.9.1", features = [] }
+embassy-executor = { version = "0.10.0", features = [] }
 embassy-time = "0.5.0"
 esp-radio = { version = "0.17.0", features = [
   "ble",

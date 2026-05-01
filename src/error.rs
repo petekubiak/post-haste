@@ -39,6 +39,11 @@ pub enum PostmasterError {
     /// If you have not yet registered any Agents, you can call `postmaster::set_spawner()` before attempting to send the delayed message.
     #[cfg(target_os = "none")]
     SpawnerNotSet,
+    /// TF TODO
+    /// https://docs.embassy.dev/embassy-executor/git/std/enum.SpawnError.html
+    /// Too many instances of this task are already running
+    #[cfg(target_os = "none")]
+    TooManyInstances,
 }
 
 impl From<TryLockError> for PostmasterError {
