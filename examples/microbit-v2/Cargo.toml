@@ -1,0 +1,8 @@
+[package]
+name = "microbit-v2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+microbit-bsp = "0.4.0"
