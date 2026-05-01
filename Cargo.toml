@@ -11,13 +11,13 @@ const_env = "0.1.4"
 embassy-executor = "0.9.1"
 embassy-sync = "0.7.2"
 embassy-time = "0.5.0"
-portable-atomic = { version = "1.11.0" }
+portable-atomic = { version = "1.13.1" }
 
 
 # Tokio Dependencies
 [target.'cfg(not(target_os = "none"))'.dependencies]
-tokio = { version = "1.45.1", features = ["full"] }
-once_cell = { version = "1.21.3" }
+tokio = { version = "1.52.1", features = ["full"] }
+once_cell = { version = "1.21.4" }
 portable-atomic = { version = "1.11.0" }
 
 [dev-dependencies]
