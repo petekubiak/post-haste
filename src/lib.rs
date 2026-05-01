@@ -66,6 +66,9 @@ pub use error::PostmasterError;
 macro_rules! init_postmaster {
 
     ($address_enum:ty, $payload_enum:ty, $timeout_us: expr) => {
+        // Fix incorrect cargo warning that payloads is unused
+        #[allow(unused_imports)]
+
         /// API module for the Postmaster
         /// This module contains all of the functions required to pass messages between Agents, facilitated by the Postmaster.
         ///
