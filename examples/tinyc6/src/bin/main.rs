@@ -46,16 +46,16 @@ async fn main(spawner: Spawner) -> ! {
 
     rprintln!("Embassy initialized!");
 
-    let radio_init = esp_radio::init().expect("Failed to initialize Wi-Fi/BLE controller");
-    let (mut _wifi_controller, _interfaces) =
-        esp_radio::wifi::new(&radio_init, peripherals.WIFI, Default::default())
-            .expect("Failed to initialize Wi-Fi controller");
-    // find more examples https://github.com/embassy-rs/trouble/tree/main/examples/esp32
-    let transport = BleConnector::new(&radio_init, peripherals.BT, Default::default()).unwrap();
-    let ble_controller = ExternalController::<_, 20>::new(transport);
-    let mut resources: HostResources<DefaultPacketPool, CONNECTIONS_MAX, L2CAP_CHANNELS_MAX> =
-        HostResources::new();
-    let _stack = trouble_host::new(ble_controller, &mut resources);
+    // let radio_init = esp_radio::init().expect("Failed to initialize Wi-Fi/BLE controller");
+    // let (mut _wifi_controller, _interfaces) =
+    //     esp_radio::wifi::new(&radio_init, peripherals.WIFI, Default::default())
+    //         .expect("Failed to initialize Wi-Fi controller");
+    // // find more examples https://github.com/embassy-rs/trouble/tree/main/examples/esp32
+    // let transport = BleConnector::new(&radio_init, peripherals.BT, Default::default()).unwrap();
+    // let ble_controller = ExternalController::<_, 20>::new(transport);
+    // let mut resources: HostResources<DefaultPacketPool, CONNECTIONS_MAX, L2CAP_CHANNELS_MAX> =
+    //     HostResources::new();
+    // let _stack = trouble_host::new(ble_controller, &mut resources);
 
     // TODO: Spawn some tasks
     tinyc6::run(spawner).await;
