@@ -1,18 +1,36 @@
 #![no_std]
 #![no_main]
 
-use panic_probe as _;
-
 use embassy_executor::Spawner;
-use rtt_target::rprintln;
+use embassy_futures::select::{select, Either};
+use microbit_bsp::{*, embassy_time::Duration};
+use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    rtt_target::rtt_init_print!();
-    let _peripherals = embassy_nrf::init(Default::default());
+    let board = Microbit::default();
 
+    let mut display = board.display;
+    let mut btn_a = board.btn_a;
+    let mut btn_b = board.btn_b;
+
+    display.set_brightness(display::Brightness::MAX);
+    display.scroll("Hello, World!").await;
+    defmt::info!("Application started, press buttons!");
     loop {
-        rprintln!("Hello, world!");
-        embassy_time::Timer::after_secs(1).await;
+        match select(btn_a.wait_for_low(), btn_b.wait_for_low()).await {
+            Either::First(_) => {
+                defmt::info!("A pressed");
+                display
+                    .display(display::fonts::ARROW_LEFT, Duration::from_secs(1))
+                    .await;
+            }
+            Either::Second(_) => {
+                defmt::info!("B pressed");
+                display
+                    .display(display::fonts::ARROW_RIGHT, Duration::from_secs(1))
+                    .await;
+            }
+        }
     }
 }
