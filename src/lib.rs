@@ -2,6 +2,7 @@
 
 pub mod agent;
 pub mod error;
+mod tests;
 
 #[cfg(not(target_os = "none"))]
 pub mod async_runtime_dependencies {
@@ -28,7 +29,7 @@ pub mod dependencies {
     pub use portable_atomic::{AtomicU32, AtomicUsize};
 }
 pub use error::PostmasterError;
-pub use post_haste_proc::{addresses, payloads};
+pub use post_haste_proc_macro::{addresses, payloads};
 
 /// Initialise the Postmaster for use in your project.
 /// As the code for the Postmaster is no_std, it requires information about the project.
@@ -43,25 +44,25 @@ pub use post_haste_proc::{addresses, payloads};
 /// Therefore the project must be built with the nightly compiler and you will need to include this feature at the top of the file (see example).
 ///
 /// # Examples
-/// ```rust
-/// #![feature(variant_count)]
-///
-/// use post_haste::init_postmaster;
-///
-/// enum Address {
-///   AgentOne,
-///   AgentTwo,
-/// }
-///
-/// enum Payloads {
-///   Hello,
-///   AByte(u8),
-///   DataResponse{ acknowledged: bool },
-///   // ...
-/// }
-///
-/// init_postmaster!(Address, Payloads);
-/// ```
+/// //```rust
+/// // use post_haste::init_postmaster;
+/// //
+/// // #[post_haste::addresses]
+/// // enum Address {
+/// //   AgentOne,
+/// //   AgentTwo,
+/// // }
+/// //
+/// // #[post_haste::payloads]
+/// // enum Payloads {
+/// //   Hello,
+/// //   AByte(u8),
+/// //   DataResponse{ acknowledged: bool },
+/// //   // ...
+/// // }
+/// //
+/// // init_postmaster!();
+/// //```
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]
 macro_rules! init_postmaster {
