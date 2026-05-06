@@ -17,4 +17,10 @@ mod tests {
         let t = trybuild::TestCases::new();
         t.compile_fail("compile_tests/no_addresses.rs");
     }
+
+    #[test]
+    fn non_enum_address() {
+        let t = trybuild::TestCases::new();
+        t.compile_fail("compile_tests/non_enum_address.rs");
+    }
 }
