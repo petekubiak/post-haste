@@ -1,3 +1,5 @@
+use post_haste::init_postmaster;
+
 #[post_haste::payloads]
 enum MyPayloads {
     Variant1,
@@ -16,6 +18,6 @@ enum AgentAddresses {
     AgentB,
 }
 
-post_haste::init_postmaster!();
+init_postmaster!();
 
 fn main() {}
