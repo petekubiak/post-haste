@@ -127,6 +127,8 @@ macro_rules! init_postmaster {
                     use post_haste::dependencies::{NoopRawMutex, Channel, task};
                     use post_haste::agent::Agent;
                     use crate::postmaster::Message;
+                    use crate::postmaster::Addresses;
+                    use crate::postmaster::Payloads;
                     struct Mailbox {
                         pub inner: Channel<NoopRawMutex, Message, $queue_size>
                     }
