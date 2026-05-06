@@ -28,6 +28,7 @@ pub mod dependencies {
     pub use portable_atomic::{AtomicU32, AtomicUsize};
 }
 pub use error::PostmasterError;
+pub use post_haste_proc::{addresses, payloads};
 
 /// Initialise the Postmaster for use in your project.
 /// As the code for the Postmaster is no_std, it requires information about the project.
@@ -77,7 +78,8 @@ macro_rules! init_postmaster {
             use post_haste::PostmasterError;
             use post_haste::dependencies::*;
 
-            const ADDRESS_COUNT: usize = core::mem::variant_count::<$address_enum>();
+            // const ADDRESS_COUNT: usize = core::mem::variant_count::<$address_enum>();
+            const ADDRESS_COUNT: usize = super::POSTMASTER_ADDRESSES_VARIANT_COUNT;
 
             /// Initialises an Agent and its message queue
             /// This macro both instantiates an Actor and kicks off its main loop.
