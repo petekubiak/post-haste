@@ -1,12 +1,5 @@
 use proc_macro::TokenStream;
 
-/// TODO
-/// test using macro twice (expect error)
-/// ensure the enum provided is defined as pub?
-/// test not using macro
-/// test giving a non enum
-/// test a payload containing a struct from another module
-
 #[proc_macro_attribute]
 pub fn payloads(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemEnum);
