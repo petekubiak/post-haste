@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 const_env = "0.1.5"
+post-haste-proc = { path = "./post-haste-proc/" }
 
 # Embassy Dependencies
 [target.'cfg(target_os = "none")'.dependencies]
