@@ -76,8 +76,8 @@ macro_rules! init_postmaster {
         pub mod postmaster {
             use post_haste::PostmasterError;
             use post_haste::dependencies::*;
-            type Addresses = super::POSTMASTER_ADDRESSES_ENUM;
-            type Payloads = super::POSTMASTER_PAYLOADS_ENUM;
+            pub type Addresses = super::POSTMASTER_ADDRESSES_ENUM;
+            pub type Payloads = super::POSTMASTER_PAYLOADS_ENUM;
             const ADDRESS_COUNT: usize = super::POSTMASTER_ADDRESSES_VARIANT_COUNT;
 
             /// Initialises an Agent and its message queue
@@ -91,6 +91,8 @@ macro_rules! init_postmaster {
             macro_rules! _register_agent {
                 ($agent_address:ident, $agent:ty, $config:expr, $queue_size: expr) => {{
                     use crate::postmaster::Message;
+                    use crate::postmaster::Addresses;
+                    use crate::postmaster::Payloads;
                     use post_haste::agent::Agent;
                     use post_haste::dependencies::*;
                     struct Mailbox {

@@ -4,7 +4,6 @@
 //! "Hello" messages are then sent from the main task to the Agents, with the source address given as one of the other Agents.
 //! This will prompt the Agent to respond with its own "hello" back to the source, initiating an infinite loop.
 
-#![feature(variant_count)]
 use core::time::Duration;
 
 use polite_agent::{PoliteAgent, PoliteAgentConfig, PoliteAgentMessage};
@@ -15,6 +14,7 @@ use tokio::time::sleep;
 /// This could be arranged as a single enum of all possible messages, however I prefer to group messages by the actor they are associated with.
 /// In this case, as there is only one actor there is only one Payload variant.
 #[derive(Debug)]
+#[post_haste::payloads]
 enum Payloads {
     /// This variant covers all messages associated with the Polite Agent.
     PoliteMessage(PoliteAgentMessage),
@@ -26,6 +26,7 @@ enum Payloads {
 /// This enum provides all Agent addresses.
 /// Each Agent must be assigned a unique address upon registration with the Postmaster.
 /// As indicated by the signature of the Agent trait's `run()` method, Agents are expected to live for the lifetime of the application. This ensures that addresses are always valid and messages aren't accidentally sent to an unoccupied address.
+#[post_haste::addresses]
 #[derive(Debug, Clone, Copy)]
 enum Address {
     AgentA,
@@ -39,7 +40,7 @@ enum Address {
 // This third argument is optional and can be omitted, which will result in the Postmaster using a default timeout of 1 ms (1000 us).
 // Due to the way the macro expands, if you wish to use a constant to represent the timeout value, you will need to include the scope of the constant, as demonstrated.
 const SEND_TIMEOUT_US: u32 = 100;
-init_postmaster!(Address, Payloads, crate::SEND_TIMEOUT_US);
+init_postmaster!(crate::SEND_TIMEOUT_US);
 
 /// This module provides all functionality and types associated with the Polite Agent.
 /// Usually this would be in its own file, however here it is presented as a module so that the example is a single, self-reliant file.
