@@ -6,14 +6,8 @@ enum MyPayloads {
     Variant2,
 }
 
-#[post_haste::payloads]
-enum MyOtherPayloads {
-    VariantA,
-    VariantB,
-}
-
+// User hasn't used the addresses macro
 #[derive(Copy, Clone)]
-#[post_haste::addresses]
 enum AgentAddresses {
     AgentA,
     AgentB,

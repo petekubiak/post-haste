@@ -1,0 +1,24 @@
+error[E0425]: cannot find type `POSTMASTER_ADDRESSES_ENUM` in module `super`
+  --> compile_tests/no_addresses.rs:16:1
+   |
+ 3 | #[post_haste::payloads]
+   | ----------------------- similarly named type alias `POSTMASTER_PAYLOADS_ENUM` defined here
+...
+16 | init_postmaster!();
+   | ^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `init_postmaster` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: a type alias with a similar name exists
+  --> src/lib.rs
+   |
+   -             pub type Addresses = super::POSTMASTER_ADDRESSES_ENUM;
+   +             pub type Addresses = super::POSTMASTER_PAYLOADS_ENUM;
+   |
+
+error[E0425]: cannot find value `POSTMASTER_ADDRESSES_VARIANT_COUNT` in module `super`
+  --> compile_tests/no_addresses.rs:16:1
+   |
+16 | init_postmaster!();
+   | ^^^^^^^^^^^^^^^^^^ not found in `super`
+   |
+   = note: this error originates in the macro `init_postmaster` (in Nightly builds, run with -Z macro-backtrace for more info)
