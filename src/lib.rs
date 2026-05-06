@@ -66,7 +66,7 @@ pub use post_haste_proc::{addresses, payloads};
 #[allow(clippy::crate_in_macro_def)]
 macro_rules! init_postmaster {
 
-    ($address_enum:ty, $payload_enum:ty, $timeout_us: expr) => {
+    ($timeout_us: expr) => {
         /// API module for the Postmaster
         /// This module contains all of the functions required to pass messages between Agents, facilitated by the Postmaster.
         ///
@@ -74,11 +74,10 @@ macro_rules! init_postmaster {
         /// Once this is done you can send the Agent a message by calling one of the messaging functions, e.g. `postmaster::send()`.
         #[allow(clippy::crate_in_macro_def)]
         pub mod postmaster {
-            use super::{$address_enum, $payload_enum};
             use post_haste::PostmasterError;
             use post_haste::dependencies::*;
-
-            // const ADDRESS_COUNT: usize = core::mem::variant_count::<$address_enum>();
+            type Addresses = super::POSTMASTER_ADDRESSES_ENUM;
+            type Payloads = super::POSTMASTER_PAYLOADS_ENUM;
             const ADDRESS_COUNT: usize = super::POSTMASTER_ADDRESSES_VARIANT_COUNT;
 
             /// Initialises an Agent and its message queue
@@ -100,8 +99,8 @@ macro_rules! init_postmaster {
                     }
                     let (sender, receiver) = channel::<Message>($queue_size);
 
-                    let agent = <$agent>::create(<$address_enum>::$agent_address, $config).await;
-                    postmaster::register(<$address_enum>::$agent_address, sender).await.inspect(|_|{
+                    let agent = <$agent>::create(<Addresses>::$agent_address, $config).await;
+                    postmaster::register(<Addresses>::$agent_address, sender).await.inspect(|_|{
 
                         tokio::task::spawn(async move {
                             agent.run(receiver).await;
@@ -133,9 +132,9 @@ macro_rules! init_postmaster {
                     unsafe impl Sync for Mailbox{}
                     static MAILBOX: Mailbox = Mailbox{ inner: Channel::new()};
 
-                    let agent = <$agent>::create(<$address_enum>::$agent_address, $config).await;
+                    let agent = <$agent>::create(<Addresses>::$agent_address, $config).await;
                     postmaster::set_spawner($spawner);
-                    postmaster::register(<$address_enum>::$agent_address, MAILBOX.inner.sender().into()).await.inspect(|_| {
+                    postmaster::register(<Addresses>::$agent_address, MAILBOX.inner.sender().into()).await.inspect(|_| {
 
                         #[task]
                         async fn run_agent(agent: $agent) {
@@ -178,7 +177,7 @@ macro_rules! init_postmaster {
             /// ```
             #[cfg(target_os = "none")]
             pub async fn register(
-                address: $address_enum,
+                address: Addresses,
                 mailbox: DynamicSender<'static, Message>,
             ) -> Result<(), PostmasterError> {
                 postmaster_internal::register(address, mailbox).await
@@ -208,7 +207,7 @@ macro_rules! init_postmaster {
             /// ```
             #[cfg(not(target_os = "none"))]
             pub async fn register(
-                address: $address_enum,
+                address: Addresses,
                 mailbox: Sender<Message>,
             ) -> Result<(), PostmasterError> {
                 postmaster_internal::register(address, mailbox).await
@@ -225,9 +224,9 @@ macro_rules! init_postmaster {
             /// - The Postmaster being unable to acquire a lock on the senders before the timeout expires
             /// - There being no recipient registered at the destination address
             pub async fn send(
-                destination: $address_enum,
-                source: $address_enum,
-                payload: $payload_enum,
+                destination: Addresses,
+                source: Addresses,
+                payload: Payloads,
             ) -> Result<(), PostmasterError> {
                 postmaster_internal::send_internal(destination, Message { source, payload }, None)
                     .await
@@ -240,9 +239,9 @@ macro_rules! init_postmaster {
             /// - The lock on the senders not being available
             /// - There being no recipient registered at the destination address
             pub fn try_send(
-                destination: $address_enum,
-                source: $address_enum,
-                payload: $payload_enum,
+                destination: Addresses,
+                source: Addresses,
+                payload: Payloads,
             ) -> Result<(), PostmasterError> {
                 postmaster_internal::try_send_internal(destination, Message { source, payload })
             }
@@ -251,9 +250,9 @@ macro_rules! init_postmaster {
             /// The function takes a source and destination address and a payload, but instead of immediately attempting to send the message, it instead returns a MessageBuilder type.
             /// The MessageBuilder provides methods to further configure the message before it is sent.
             pub fn message(
-                destination: $address_enum,
-                source: $address_enum,
-                payload: $payload_enum,
+                destination: Addresses,
+                source: Addresses,
+                payload: Payloads,
             ) -> MessageBuilder {
                 MessageBuilder {
                     destination,
@@ -333,15 +332,15 @@ macro_rules! init_postmaster {
             /// This structure is automatically generated by the sending functions from the source address and the payload
             pub struct Message {
                 /// The address from which the message originated
-                pub source: $address_enum,
+                pub source: Addresses,
                 /// The message contents
-                pub payload: $payload_enum,
+                pub payload: Payloads,
             }
 
             /// A builder for configuring messages.
             /// Provides methods for configuring the message before it is sent with the `send()` method
             pub struct MessageBuilder {
-                destination: $address_enum,
+                destination: Addresses,
                 message: Message,
                 timeout: Option<Duration>,
                 delay: Option<Duration>,
@@ -358,7 +357,7 @@ macro_rules! init_postmaster {
 
             mod postmaster_internal {
                 use super::{
-                    ADDRESS_COUNT, Message, PostmasterError, $address_enum, $payload_enum,
+                    ADDRESS_COUNT, Message, PostmasterError, Addresses, Payloads,
                 };
                 use core::cell::RefCell;
                 use core::sync::atomic::Ordering;
@@ -372,7 +371,7 @@ macro_rules! init_postmaster {
                 type Mailbox = Sender<Message>;
 
                 pub(super) async fn register(
-                    address: $address_enum,
+                    address: Addresses,
                     mailbox: Mailbox,
                 ) -> Result<(), PostmasterError> {
                     let mut senders = POSTMASTER.senders.lock().await;
@@ -385,7 +384,7 @@ macro_rules! init_postmaster {
                 }
 
                 pub(super) async fn send_internal(
-                    destination: $address_enum,
+                    destination: Addresses,
                     message: Message,
                     timeout: Option<Duration>,
                 ) -> Result<(), PostmasterError> {
@@ -426,7 +425,7 @@ macro_rules! init_postmaster {
                 }
 
                 pub(super) fn try_send_internal(
-                    destination: $address_enum,
+                    destination: Addresses,
                     message: Message,
                 ) -> Result<(), PostmasterError> {
                     evaluate_diagnostics(
@@ -441,7 +440,7 @@ macro_rules! init_postmaster {
                 }
 
                 pub(super) async fn spawn_delayed_send(
-                    destination: $address_enum,
+                    destination: Addresses,
                     message: Message,
                     delay: Duration,
                     timeout: Option<Duration>,
@@ -466,7 +465,7 @@ macro_rules! init_postmaster {
 
                 #[cfg_attr(target_os = "none", task(pool_size=DELAYED_MESSAGE_POOL_SIZE))]
                 pub(super) async fn delayed_send(
-                    destination: $address_enum,
+                    destination: Addresses,
                     message: Message,
                     delay: Duration,
                     timeout: Option<Duration>,
@@ -481,7 +480,7 @@ macro_rules! init_postmaster {
 
                 #[cfg_attr(target_os = "none", task(pool_size=DELAYED_MESSAGE_POOL_SIZE))]
                 pub(super) async fn delayed_try_send(
-                    destination: $address_enum,
+                    destination: Addresses,
                     message: Message,
                     delay: Duration,
                 ) {
@@ -569,7 +568,7 @@ macro_rules! init_postmaster {
             }
         }
     };
-    ($address_enum:ty, $payload_enum:ty) => {
-        init_postmaster!($address_enum, $payload_enum, 1000);
+    () => {
+        init_postmaster!(1000);
     };
 }

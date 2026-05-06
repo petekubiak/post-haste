@@ -1,5 +1,4 @@
 //! This example provides a very simple scenario of two Agents exchanging messages with each other.
-
 use core::time::Duration;
 
 use post_haste::init_postmaster;
@@ -19,7 +18,7 @@ enum Addresses {
     B,
 }
 
-init_postmaster!(Addresses, Payloads);
+init_postmaster!();
 
 #[tokio::main]
 async fn main() {
