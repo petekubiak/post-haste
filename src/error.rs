@@ -27,7 +27,7 @@ pub enum PostmasterError {
     #[cfg(not(target_os = "none"))]
     ReceiverClosed, // Tokio Specific
     /// Calling `try_send()` on the recipient's message queue failed.
-    /// This is most likely due to teh recipient's message queue being full.
+    /// This is most likely due to the recipient's message queue being full.
     TrySendFailed,
     /// Postmaster was unable to spawn a task to handle the delayed message.
     /// This is most likely caused by the task pool being too small.
