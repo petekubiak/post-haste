@@ -1182,12 +1182,12 @@ dependencies = [
  "embassy-time",
  "once_cell",
  "portable-atomic",
- "post-haste-proc",
+ "post-haste-proc-macro",
  "tokio",
 ]
 
 [[package]]
-name = "post-haste-proc"
+name = "post-haste-proc-macro"
 version = "0.1.0"
 dependencies = [
  "quote",

@@ -1,0 +1,31 @@
+error[E0428]: the name `POSTMASTER_PAYLOADS_VARIANT_COUNT` is defined multiple times
+ --> compile_tests/multiple_payloads.rs:7:1
+  |
+1 | #[post_haste::payloads]
+  | ----------------------- previous definition of the value `POSTMASTER_PAYLOADS_VARIANT_COUNT` here
+...
+7 | #[post_haste::payloads]
+  | ^^^^^^^^^^^^^^^^^^^^^^^ `POSTMASTER_PAYLOADS_VARIANT_COUNT` redefined here
+  |
+  = note: `POSTMASTER_PAYLOADS_VARIANT_COUNT` must be defined only once in the value namespace of this module
+  = note: this error originates in the attribute macro `post_haste::payloads` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0428]: the name `POSTMASTER_PAYLOADS_ENUM` is defined multiple times
+ --> compile_tests/multiple_payloads.rs:7:1
+  |
+1 | #[post_haste::payloads]
+  | ----------------------- previous definition of the type `POSTMASTER_PAYLOADS_ENUM` here
+...
+7 | #[post_haste::payloads]
+  | ^^^^^^^^^^^^^^^^^^^^^^^ `POSTMASTER_PAYLOADS_ENUM` redefined here
+  |
+  = note: `POSTMASTER_PAYLOADS_ENUM` must be defined only once in the type namespace of this module
+  = note: this error originates in the attribute macro `post_haste::payloads` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `init_postmaster` in this scope
+  --> compile_tests/multiple_payloads.rs:19:1
+   |
+19 | post_haste::init_postmaster!();
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the macro `post_haste::init_postmaster` (in Nightly builds, run with -Z macro-backtrace for more info)
