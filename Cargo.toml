@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 const_env = "0.1.5"
-post-haste-proc = { path = "./post-haste-proc/" }
+post-haste-proc-macro = { path = "./post-haste-proc-macro/" }
 
 # Embassy Dependencies
 [target.'cfg(target_os = "none")'.dependencies]
@@ -21,5 +21,6 @@ once_cell = { version = "1.21.4" }
 portable-atomic = { version = "1.13.1" }
 
 [dev-dependencies]
-crossterm = "0.29.0"
-chrono = "0.4.43"
+crossterm = "0.29.0" # For the traffic-lights example
+chrono = "0.4.43" # For the traffic-lights example
+trybuild = "1.0.116" # For testing for compilation errors

@@ -64,11 +64,3 @@ pub fn addresses(_attr: TokenStream, item: TokenStream) -> TokenStream {
 fn get_variant_count(input: &syn::ItemEnum) -> usize {
     input.variants.iter().map(|_| 1).sum()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {}
-}
