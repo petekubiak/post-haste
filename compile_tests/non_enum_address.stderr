@@ -1,0 +1,5 @@
+error: expected `enum`
+ --> compile_tests/non_enum_address.rs:2:1
+  |
+2 | struct Addresses {
+  | ^^^^^^

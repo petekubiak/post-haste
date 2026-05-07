@@ -22,5 +22,5 @@ portable-atomic = { version = "1.13.1" }
 
 [dev-dependencies]
 crossterm = "0.29.0" # For the traffic-lights example
-chrono = "0.4.43" # For the traffic-lights example
+chrono = "0.4.43"    # For the traffic-lights example
 trybuild = "1.0.116" # For testing compilation errors
