@@ -44,24 +44,24 @@ pub use post_haste_proc_macro::{addresses, payloads};
 /// Therefore the project must be built with the nightly compiler and you will need to include this feature at the top of the file (see example).
 ///
 /// # Examples
-/// //```rust
-/// // use post_haste::init_postmaster;
-/// //
-/// // #[post_haste::addresses]
-/// // enum Address {
-/// //   AgentOne,
-/// //   AgentTwo,
-/// // }
-/// //
-/// // #[post_haste::payloads]
-/// // enum Payloads {
-/// //   Hello,
-/// //   AByte(u8),
-/// //   DataResponse{ acknowledged: bool },
-/// //   // ...
-/// // }
-/// //
-/// // init_postmaster!();
+///```rust,ignore
+/// use post_haste::init_postmaster;
+///
+/// #[post_haste::addresses]
+/// enum Address {
+///     AgentOne,
+///     AgentTwo,
+/// }
+///
+/// #[post_haste::payloads]
+/// enum Payloads {
+///     Hello,
+///     AByte(u8),
+///     DataResponse{ acknowledged: bool },
+///     // ...
+/// }
+///
+/// init_postmaster!();
 /// //```
 #[macro_export]
 #[allow(clippy::crate_in_macro_def)]
