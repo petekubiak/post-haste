@@ -1,5 +1,11 @@
 use proc_macro::TokenStream;
 
+/// This macro should be invoked by the user on the payloads enum. The enum declaration
+/// must not be inside a function. This macro creates variables which are used by
+/// postmaster_init, so post_haste::addresses, post_haste::payloads and init_postmaster
+/// should all be invoked in the same scope.
+/// This macro exports:
+/// - type POSTMASTER_PAYLOADS_ENUM
 #[proc_macro_attribute]
 pub fn payloads(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemEnum);
@@ -14,6 +20,13 @@ pub fn payloads(_attr: TokenStream, item: TokenStream) -> TokenStream {
     output.into()
 }
 
+/// This macro should be invoked by the user on the addresses enum. The enum declaration
+/// must not be inside a function. This macro creates variables which are used by
+/// postmaster_init, so post_haste::addresses, post_haste::payloads and init_postmaster
+/// should all be invoked in the same scope.
+/// This macro exports:
+/// - const POSTMASTER_ADDRESSES_VARIANT_COUNT: usize
+/// - type POSTMASTER_ADDRESSES_ENUM
 #[proc_macro_attribute]
 pub fn addresses(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as syn::ItemEnum);
@@ -31,6 +44,7 @@ pub fn addresses(_attr: TokenStream, item: TokenStream) -> TokenStream {
     output.into()
 }
 
+/// Used to get the number of variants on an enum, using the syn library
 fn get_variant_count(input: &syn::ItemEnum) -> usize {
-    input.variants.iter().map(|_| 1).sum()
+    input.variants.iter().count()
 }
