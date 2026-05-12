@@ -28,10 +28,10 @@ The postmaster provides the mechanism by which Agents are able to communicate, a
 In order to allow the Postmaster to be `no_std` and `alloc`-free, its logic requires knowledge about the project to function.
 Specifically, it needs to know the number of Agents which will be running and the payload structures which the messages will contain.
 To achieve this, the Postmaster logic must be written at compile-time by the `init_postmaster!()` macro.
-First, the user should define a addresses enum and an payloads enum, which are annotated with the `post_haste::addresses` and `post_haste::payloads` macros respectively.
+First, the user should define an addresses enum and an payloads enum, which are annotated with the `post_haste::addresses` and `post_haste::payloads` macros respectively.
 Next, the `init_postmaster!()` macro should be invoked. The user can optionally specify the default timeout that the Postmaster should use when sending messages in microseconds.
 If `init_postmaster!()` is called with no arguments, the Postmaster will use a default timeout of 1000 us.
-The `addresses` and `payloads` macro create 3 definitions which will need to be read the postmaster module (which created by `init_postmaster`), so ideally all three macros should be invoked in the same module-scope.
+The `addresses` and `payloads` macros create 3 definitions which will need to be read by the postmaster module (which is created by `init_postmaster`), so ideally all three macros should be invoked in the same module-scope.
 For more information on message sending timeout, see [Communicating with Agents](#communicating-with-agents) below.
 The output of the macro is a `postmaster` module, containing the Postmaster's public interface.
 

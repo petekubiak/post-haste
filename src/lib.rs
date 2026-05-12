@@ -32,9 +32,9 @@ pub use error::PostmasterError;
 pub use post_haste_proc_macro::{addresses, payloads};
 
 /// Initialise the Postmaster for use in your project.
-/// Before invoking this macro, the post_haste::addresses and post_haste::payloads macros
+/// Before invoking this macro, the `post_haste::addresses` and `post_haste::payloads` macros
 /// should be invoked on the Addresses and Payloads enums respectively, as they define variables
-/// which are used by init_postmaster.
+/// which are used by `init_postmaster!()`.
 /// This is to avoid the usage of heap memory - the addresses macro determines the number of variants
 /// in the Addresses enum, so post-haste knows how much memory is needed at compile time.
 /// An optional argument allows the setting of the default timeout (in microseconds) used when attempting to send a message.

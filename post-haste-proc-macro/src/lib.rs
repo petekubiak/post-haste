@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 
 /// This macro should be invoked by the user on the payloads enum. The enum declaration
 /// must not be inside a function. This macro creates variables which are used by
-/// postmaster_init, so post_haste::addresses, post_haste::payloads and init_postmaster
+/// `init_postmaster!()`, so `post_haste::addresses`, `post_haste::payloads` and `init_postmaster!()`
 /// should all be invoked in the same scope.
 /// This macro exports:
 /// - type POSTMASTER_PAYLOADS_ENUM
@@ -22,7 +22,7 @@ pub fn payloads(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
 /// This macro should be invoked by the user on the addresses enum. The enum declaration
 /// must not be inside a function. This macro creates variables which are used by
-/// postmaster_init, so post_haste::addresses, post_haste::payloads and init_postmaster
+/// `init_postmaster!()`, so `post_haste::addresses`, `post_haste::payloads` and `init_postmaster!()`
 /// should all be invoked in the same scope.
 /// This macro exports:
 /// - const POSTMASTER_ADDRESSES_VARIANT_COUNT: usize
