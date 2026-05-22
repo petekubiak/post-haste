@@ -28,11 +28,12 @@ The postmaster provides the mechanism by which Agents are able to communicate, a
 In order to allow the Postmaster to be `no_std` and `alloc`-free, its logic requires knowledge about the project to function.
 Specifically, it needs to know the number of Agents which will be running and the payload structures which the messages will contain.
 To achieve this, the Postmaster logic must be written at compile-time by the `init_postmaster!()` macro.
-The two arguments to the macro are of course the `Address` type and the `Payload` type, both defined by your project.
-The `init_postmaster!()` macro takes an optional third argument, the default timeout that the Postmaster should use when sending messages in microseconds.
-If this optional argument is left out, the Postmaster will use a timeout of 1 ms (1000 us).
+First, the user should define an addresses enum and an payloads enum, which are annotated with the `post_haste::addresses` and `post_haste::payloads` macros respectively.
+Next, the `init_postmaster!()` macro should be invoked. The user can optionally specify the default timeout that the Postmaster should use when sending messages in microseconds.
+If `init_postmaster!()` is called with no arguments, the Postmaster will use a default timeout of 1000 us.
+The `addresses` and `payloads` macros create 3 definitions which will need to be read by the postmaster module (which is created by `init_postmaster`), so ideally all three macros should be invoked in the same module-scope.
 For more information on message sending timeout, see [Communicating with Agents](#communicating-with-agents) below.
-The output of the macro is a `postmater` module, containing the Postmaster's public interface.
+The output of the macro is a `postmaster` module, containing the Postmaster's public interface.
 
 ### Registering Agents
 Once you have defined an Agent type as described above, it is instantiated using the `postmaster::register_agent!()` macro.
@@ -78,7 +79,7 @@ The default timeout used by the Postmaster when a message is sent with no specif
 
 ### Advanced configuration
 #### Delayed message pool (Embassy only)
-When using post-haste on bare metal targets with Embassy, delayed messages are held in a finite pool while they await the expiry of their delay duration.
+When using post-haste on baremetal targets with Embassy, delayed messages are held in a finite pool while they await the expiry of their delay duration.
 By default, the size of this pool is 8.
 If at any point the pool is full, any attempt to send a delayed message will result in a `DelayedMessagePoolFull` error, and the message will not be sent.
 The size of the pool can be modified by setting the `DELAYED_MESSAGE_POOL_SIZE` environment variable.
@@ -100,6 +101,7 @@ use post_haste::init_postmaster;
 
 /// The list of Agent addresses, used to identify the source and destination for messages.
 /// Each Agent must have a unique address
+#[post_haste::addresses]
 enum Address {
   AgentA,
   AgentB,
@@ -107,6 +109,7 @@ enum Address {
 }
 
 /// Top-level definition of messages used in the system.
+#[post_haste::payloads]
 enum Payloads {
   General(GeneralPayloads),
   // ...
@@ -119,7 +122,7 @@ enum GeneralPayloads {
 }
 
 // Generates the postmaster logic and initialises the postmaster for use within the project
-init_postmaster!(Address, Payloads);
+init_postmaster!();
 
 struct MyAgent {
   address: Address

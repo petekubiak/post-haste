@@ -1,6 +1,4 @@
 //! This example provides a very simple scenario of two Agents exchanging messages with each other.
-#![feature(variant_count)]
-
 use core::time::Duration;
 
 use post_haste::init_postmaster;
@@ -8,17 +6,19 @@ use tokio::time::sleep;
 
 use crate::polite_agent::PoliteAgent;
 
+#[post_haste::payloads]
 enum Payloads {
     Hello,
 }
 
 #[derive(Debug, Clone, Copy)]
+#[post_haste::addresses]
 enum Addresses {
     A,
     B,
 }
 
-init_postmaster!(Addresses, Payloads);
+init_postmaster!();
 
 #[tokio::main]
 async fn main() {

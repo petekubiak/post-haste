@@ -1,6 +1,3 @@
-// variant_count is required for init_postmaster
-#![feature(variant_count)]
-
 use post_haste::init_postmaster;
 use std::process::exit;
 
@@ -18,6 +15,7 @@ mod sequencer;
 /// Declare the payloads for project. These are the messages that each agent can
 /// send. The contents of each message is usually an enum which is defined in
 /// the file implementing that agent
+#[post_haste::payloads]
 #[derive(Debug)]
 pub(crate) enum Payloads {
     // Messages to be sent to the display agent
@@ -29,6 +27,7 @@ pub(crate) enum Payloads {
 /// Declare the addresses for post-haste. Messages can be sent from any address
 /// but Main and ButtonTask do not have agent implementations, so cannot receive
 /// messages
+#[post_haste::addresses]
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Addresses {
     Main,
@@ -37,7 +36,7 @@ pub(crate) enum Addresses {
     ButtonTask,
 }
 
-init_postmaster!(Addresses, Payloads);
+init_postmaster!();
 
 #[tokio::main]
 async fn main() {

@@ -1,0 +1,11 @@
+error[E0428]: the name `POSTMASTER_PAYLOADS_ENUM` is defined multiple times
+ --> compile_tests/multiple_payloads.rs:9:1
+  |
+3 | #[post_haste::payloads]
+  | ----------------------- previous definition of the type `POSTMASTER_PAYLOADS_ENUM` here
+...
+9 | #[post_haste::payloads]
+  | ^^^^^^^^^^^^^^^^^^^^^^^ `POSTMASTER_PAYLOADS_ENUM` redefined here
+  |
+  = note: `POSTMASTER_PAYLOADS_ENUM` must be defined only once in the type namespace of this module
+  = note: this error originates in the attribute macro `post_haste::payloads` (in Nightly builds, run with -Z macro-backtrace for more info)
