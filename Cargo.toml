@@ -3,6 +3,12 @@ name = "post-haste"
 version = "0.8.1"
 edition = "2024"
 
+[workspace]
+members = [
+  "examples/microbit-v2",
+]
+default-members = [ "." ]
+
 [dependencies]
 const_env = "0.1.5"
 post-haste-proc-macro = { path = "./post-haste-proc-macro/" }
