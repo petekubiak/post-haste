@@ -381,9 +381,10 @@ macro_rules! init_postmaster {
                     address: Addresses,
                     mailbox: Mailbox,
                 ) -> Result<(), PostmasterError> {
+                    let address_index = address as usize;
                     let mut senders = POSTMASTER.senders.lock().await;
-                    if senders[address as usize].is_none() {
-                        senders[address as usize].replace(mailbox);
+                    if senders[address_index as usize].is_none() {
+                        senders[address_index as usize].replace(mailbox);
                         Ok(())
                     } else {
                         return Err(PostmasterError::AddressAlreadyTaken);
@@ -478,7 +479,6 @@ macro_rules! init_postmaster {
                     timeout: Option<Duration>,
                 ) {
                     sleep(delay).await;
-                    let source = message.source;
                     match send_internal(destination, message, timeout).await {
                         Ok(_) => (),
                         Err(error) => (), // TODO: Can we find a way to convey back to the source that the sending failed?
